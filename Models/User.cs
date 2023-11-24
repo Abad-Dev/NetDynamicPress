@@ -1,9 +1,7 @@
 namespace NetDynamicPress.Models;
 
-public class User
+public class User : Base
 {
-    public Guid Id { get; set; }
-    public string Name { get;set; }
     public string TopImage { get;set; }
     public string Signature { get;set; }
 

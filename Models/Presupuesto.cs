@@ -1,10 +1,14 @@
 namespace NetDynamicPress.Models;
 
-public class Presupuesto
+public class Presupuesto : Base
 {
-    public Guid Id { get;set; }
-    public Guid UserId { get;set; }
-    public string Name { get;set; }
+    public User User { get;set; }
+    public string UserId { get;set; }
     public string Config { get;set; }
     public DateTime Creation { get;set; }
+
+    public Presupuesto()
+    {
+        Creation = DateTime.UtcNow;
+    }
 }

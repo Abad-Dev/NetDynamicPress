@@ -18,4 +18,27 @@ public class PresupuestoContext : DbContext
     {
         optionsBuilder.UseMySQL(_configuration.GetConnectionString("Presupuestos"));
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        User user = new()
+        {
+            Name = "Jose Perez",
+            TopImage = "",
+            Signature = ""
+        };
+
+        Presupuesto presupuesto = new()
+        {
+            Name = "Presupuesto1",
+            UserId = user.Id,
+            Config = "{}"
+        };
+
+        modelBuilder.Entity<User>().HasData(user);
+        modelBuilder.Entity<Presupuesto>().HasData(presupuesto);
+
+        base.OnModelCreating(modelBuilder);
+    }
+
 }
