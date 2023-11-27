@@ -15,6 +15,22 @@ You have to add the file manually with the next settings:
   "AllowedHosts": "*",
   "ConnectionStrings": {
     "Presupuestos": "Server=;Database=;Uid=;Pwd=;"
+  },
+  ,
+  "Jwt": {
+    "Key": "",
+    "Issuer": ""
   }
 }
+}
 ```
+
+## Relationships and Design
+
+It's really simple, it just has a Relationship 1:N, the User with the Presupuesto's the user is who create the Presupuesto's:
+
+<div style="width: 100%; display: grid; place-items: center;">
+  <img src="design.png">
+</div>
+
+## Models
