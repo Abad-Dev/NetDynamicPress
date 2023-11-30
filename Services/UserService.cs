@@ -1,16 +1,17 @@
 using NetDynamicPress.Context;
 using NetDynamicPress.Models;
-using NetDynamicPress.Managers;
 
 namespace NetDynamicPress.Services;
 
 public class UserService : IUserService
 {
     PresupuestoContext _context;
+    IPasswordService _pwdManager;
 
-    public UserService(PresupuestoContext dbContext)
+    public UserService(PresupuestoContext dbContext, IPasswordService pwdManager)
     {
         _context = dbContext;
+        _pwdManager = pwdManager;
     }
     public void TestDatabase()
     {
@@ -23,8 +24,8 @@ public class UserService : IUserService
             return false;
         }
 
-        byte[] salt = PasswordManager.GenerateSalt();
-        string hashedPassword = PasswordManager.HashPassword(password, salt);
+        byte[] salt = _pwdManager.GenerateSalt();
+        string hashedPassword = _pwdManager.HashPassword(password, salt);
 
         _context.Users.Add(new User()
         {
@@ -41,10 +42,10 @@ public class UserService : IUserService
     {
         User currentUser = _context.Users.Where(p => p.Name == name).FirstOrDefault();
 
-        byte[] storedSalt = currentUser.PasswordSalt;
         string storedHash = currentUser.PasswordHash;
+        byte[] storedSalt = currentUser.PasswordSalt;
 
-        return PasswordManager.VerifyPassword(password, storedHash, storedSalt);
+        return _pwdManager.HashPassword(password, storedSalt) == storedHash;
     }
 
     public User GetFirstUser()

@@ -1,4 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using NetDynamicPress.Services;
 
 namespace NetDynamicPress.Controllers;
@@ -7,11 +10,13 @@ namespace NetDynamicPress.Controllers;
 [Route("[controller]")]
 public class UserController : ControllerBase
 {
-    IUserService _userService;
+    private readonly IUserService _userService;
+    private readonly IJwtService _jwtService;
 
-    public UserController(IUserService UserService)
+    public UserController(IUserService UserService, IJwtService jwtService)
     {
         _userService = UserService;
+        _jwtService = jwtService;
     }
 
     [HttpGet]
@@ -23,6 +28,7 @@ public class UserController : ControllerBase
     [HttpPost]
     public IActionResult CreateUser(string name, string password)
     {
+        
         if (_userService.CreateUser(name, password))
         {
             return Ok();
@@ -31,13 +37,14 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Route("/login")]
     public IActionResult LoginUser(string name, string password)
     {
+        string Token = _jwtService.GenerateToken(name);
         if (_userService.LoginUser(name, password))
         {
-            return Ok();
+            return Ok(Token);
         } else {
             return Unauthorized();
         }
