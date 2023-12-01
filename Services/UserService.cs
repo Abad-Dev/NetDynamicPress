@@ -17,9 +17,9 @@ public class UserService : IUserService
     {
         _context.Database.EnsureCreated();
     }
-    public bool CreateUser(string name, string password) 
+    public bool CreateUser(string name, string email, string password) 
     {
-        if (_context.Users.Any(p => p.Name == name))
+        if (_context.Users.Any(p => p.Email == email))
         {
             return false;
         }
@@ -27,20 +27,22 @@ public class UserService : IUserService
         byte[] salt = _pwdManager.GenerateSalt();
         string hashedPassword = _pwdManager.HashPassword(password, salt);
 
-        _context.Users.Add(new User()
+        User newUser = new()
         {
             Name = name,
+            Email = email,
             PasswordHash = hashedPassword,
             PasswordSalt = salt 
-        }); // The rest is null
-        _context.SaveChanges();
+        };// The rest is null
 
+        _context.Users.Add(newUser); 
+        _context.SaveChanges();
         return true;
     }
 
-    public bool LoginUser(string name, string password)
+    public bool LoginUser(string email, string password)
     {
-        User currentUser = _context.Users.Where(p => p.Name == name).FirstOrDefault();
+        User currentUser = _context.Users.Where(p => p.Email == email).FirstOrDefault();
 
         string storedHash = currentUser.PasswordHash;
         byte[] storedSalt = currentUser.PasswordSalt;
@@ -66,7 +68,7 @@ public class UserService : IUserService
 public interface IUserService
 {
     void TestDatabase();
-    bool CreateUser(string name, string password);
+    bool CreateUser(string name, string email, string password);
     bool LoginUser(string name, string password);
     User GetFirstUser();
     List<User> GetAllUsers();

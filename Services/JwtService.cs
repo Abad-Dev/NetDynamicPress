@@ -3,35 +3,28 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+namespace NetDynamicPress.Services;
 public class JwtService : IJwtService
 {
     private readonly IConfiguration _configuration;
     
-
     public JwtService(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public string GenerateToken(string username)
+    public string GenerateToken(string email)
     {
-        var jwtIssuer = _configuration.GetSection("Jwt:Issuer").Get<string>();
-        var jwtKey = _configuration.GetSection("Jwt:Key").Get<string>();
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(jwtKey);
+        var Sectoken = new JwtSecurityToken(_configuration["Jwt:Issuer"],
+              _configuration["Jwt:Issuer"],
+              null,
+              expires: DateTime.Now.AddMinutes(120),
+              signingCredentials: credentials);
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
-            Expires = DateTime.UtcNow.AddHours(1),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-            Issuer = jwtIssuer,
-            Audience = jwtIssuer
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        return new JwtSecurityTokenHandler().WriteToken(Sectoken);
     }
 
     public ClaimsPrincipal ValidateToken(string token)

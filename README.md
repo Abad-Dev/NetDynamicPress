@@ -22,15 +22,75 @@ You have to add the file manually with the next settings:
     "Issuer": ""
   }
 }
-}
 ```
+It is important that the bit size of the key is at least 128 bits
+
 
 ## Relationships and Design
 
-It's really simple, it just has a Relationship 1:N, the User with the Presupuesto's the user is who create the Presupuesto's:
+It's really simple, it just has a Relationship 1:N, the User with the Presupuesto's. The user is who create the Presupuesto's:
 
 <div style="width: 100%; display: grid; place-items: center;">
   <img src="design.png">
 </div>
 
 ## Models
+
+### 1. Base
+The two models inherit from a *Base* class which defines the name and the Id generated automatically in the constructor:
+
+```C#
+public class Base
+{
+    public string Id { get; private set; }
+    public string Name { get; set; }
+
+    public Base()
+    {
+        Id = Guid.NewGuid().ToString();
+    }
+
+    public override string ToString()
+    {
+        return $"{Name},{Id}";
+    }
+}
+
+```
+### 2. User
+The User model saves the navigation prop of the Presupuesto's, and the  salt with which the password has been hashed:
+
+```C#
+public class User : Base
+{
+    public string PasswordHash { get; set; }
+    public byte[] PasswordSalt { get; set; }
+    public string TopImage { get;set; }
+    public string Signature { get;set; }
+
+    public virtual IEnumerable<Presupuesto> Presupuestos { get;set; }
+}
+```
+
+It also saves the top image and the signature, which will be used in all the Presupuesto's
+
+### 3. Presupuesto
+The Presupuesto model saves the foreign key from the user, and it saves the data *Config* in a json (weakly typed).
+
+```C#
+
+public class Presupuesto : Base
+{
+    public User User { get;set; }
+    public string UserId { get;set; }
+    public string Config { get;set; }
+    public DateTime Creation { get;set; }
+
+    public Presupuesto()
+    {
+        Creation = DateTime.UtcNow;
+    }
+}
+```
+
+Also have a Creation prop, which is generated in the constructor.

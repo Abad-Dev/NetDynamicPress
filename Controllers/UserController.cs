@@ -26,10 +26,10 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult CreateUser(string name, string password)
+    public IActionResult CreateUser(string name, string email, string password)
     {
         
-        if (_userService.CreateUser(name, password))
+        if (_userService.CreateUser(name, email, password))
         {
             return Ok();
         } else {
@@ -39,11 +39,11 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [Route("/login")]
-    public IActionResult LoginUser(string name, string password)
+    public IActionResult LoginUser(string email, string password)
     {
-        string Token = _jwtService.GenerateToken(name);
-        if (_userService.LoginUser(name, password))
+        if (_userService.LoginUser(email, password))
         {
+            string Token = _jwtService.GenerateToken(email);
             return Ok(Token);
         } else {
             return Unauthorized();

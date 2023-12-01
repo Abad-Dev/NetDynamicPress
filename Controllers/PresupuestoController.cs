@@ -10,13 +10,18 @@ namespace NetDynamicPress.Controllers;
 [Authorize] // Asegura que todas las acciones en este controlador requieren autenticación
 public class PresupuestoController : ControllerBase
 {
-    private readonly IPresupuestoService _PresupuestoService;
-    private readonly IJwtService _jwtService;
+    IPresupuestoService _PresupuestoService;
 
-    public PresupuestoController(IPresupuestoService PresupuestoService, IJwtService jwtService)
+    public PresupuestoController(IPresupuestoService PresupuestoService)
     {
         _PresupuestoService = PresupuestoService;
-        _jwtService = jwtService;
+    }
+
+    [HttpGet]
+    [Route("/test")]
+    public IActionResult Test()
+    {
+        return Ok("Hola mundo");
     }
 
     [HttpPost]
@@ -33,4 +38,5 @@ public class PresupuestoController : ControllerBase
         Presupuesto presupuesto = _PresupuestoService.GetById(id);
         return Ok(presupuesto);
     }
+
 }

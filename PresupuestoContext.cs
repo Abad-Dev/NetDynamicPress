@@ -23,6 +23,7 @@ public class PresupuestoContext : DbContext
     {
         User user = new()
         {
+            Email = "jfabianabadd@gmail.com",
             PasswordHash = "XmGz6UKHaQm0KqCzdTmXow7aVVBIY7BVJ5avKcOkQ5E=",
             PasswordSalt = new byte[16],
             Name = "Jose Perez",
