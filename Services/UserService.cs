@@ -40,14 +40,19 @@ public class UserService : IUserService
         return true;
     }
 
-    public bool LoginUser(string email, string password)
+    public User LoginUser(string email, string password)
     {
         User currentUser = _context.Users.Where(p => p.Email == email).FirstOrDefault();
 
         string storedHash = currentUser.PasswordHash;
         byte[] storedSalt = currentUser.PasswordSalt;
 
-        return _pwdManager.HashPassword(password, storedSalt) == storedHash;
+        if (_pwdManager.HashPassword(password, storedSalt) == storedHash)
+        {
+            return currentUser;
+        } else {
+            return null;
+        }
     }
 
     public User GetFirstUser()
@@ -69,7 +74,7 @@ public interface IUserService
 {
     void TestDatabase();
     bool CreateUser(string name, string email, string password);
-    bool LoginUser(string name, string password);
+    User LoginUser(string name, string password);
     User GetFirstUser();
     List<User> GetAllUsers();
 }

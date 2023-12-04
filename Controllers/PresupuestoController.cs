@@ -10,18 +10,29 @@ namespace NetDynamicPress.Controllers;
 [Authorize] // Asegura que todas las acciones en este controlador requieren autenticación
 public class PresupuestoController : ControllerBase
 {
-    IPresupuestoService _PresupuestoService;
+    private readonly IPresupuestoService _PresupuestoService;
+    private readonly IJwtService _jwtService;
 
-    public PresupuestoController(IPresupuestoService PresupuestoService)
+    public PresupuestoController(IPresupuestoService PresupuestoService, IJwtService jwtService)
     {
         _PresupuestoService = PresupuestoService;
+        _jwtService = jwtService;
     }
 
     [HttpGet]
     [Route("/test")]
     public IActionResult Test()
     {
-        return Ok("Hola mundo");
+        var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
+        if (authorizationHeader != null && authorizationHeader.StartsWith("Bearer "))
+        {
+            string token = authorizationHeader["Bearer ".Length..];
+            string userId = _jwtService.GetUserIdFromToken(token);
+            
+            return Ok(userId);
+        }
+
+        return null;
     }
 
     [HttpPost]

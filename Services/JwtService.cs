@@ -13,45 +13,54 @@ public class JwtService : IJwtService
         _configuration = configuration;
     }
 
-    public string GenerateToken(string email)
+    public string GenerateToken(string userId)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        var claims = new[]
+        {
+            new Claim("sub", userId.ToString())
+        };
 
         var Sectoken = new JwtSecurityToken(_configuration["Jwt:Issuer"],
-              _configuration["Jwt:Issuer"],
-              null,
-              expires: DateTime.Now.AddMinutes(120),
-              signingCredentials: credentials);
+            _configuration["Jwt:Issuer"],
+            claims,
+            expires: DateTime.Now.AddMinutes(120),
+            signingCredentials: credentials
+        );
 
         return new JwtSecurityTokenHandler().WriteToken(Sectoken);
     }
 
-    public ClaimsPrincipal ValidateToken(string token)
+    public string GetUserIdFromToken(string token)
     {
-        var jwtIssuer = _configuration.GetSection("Jwt:Issuer").Get<string>();
-        var jwtKey = _configuration.GetSection("Jwt:Key").Get<string>();
-
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(jwtKey);
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
 
-        var tokenValidationParameters = new TokenValidationParameters
+        /*try
+        {*/
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = securityKey,
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+
+            var userIdClaim = principal.FindFirst("sub");
+            return userIdClaim?.Value;
+        /*}
+        catch (Exception)
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtIssuer,
-            IssuerSigningKey = new SymmetricSecurityKey(key)
-        };
-
-        return tokenHandler.ValidateToken(token, tokenValidationParameters, out _);
+            return null;
+        }*/
     }
 }
 
 public interface IJwtService
 {
-    string GenerateToken(string username);
-    ClaimsPrincipal ValidateToken(string token);
+    string GenerateToken(string userId);
+    string GetUserIdFromToken(string token);
 }
