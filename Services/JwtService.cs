@@ -19,7 +19,7 @@ public class JwtService : IJwtService
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
-            new Claim("sub", userId.ToString())
+            new Claim("sub", userId)
         };
 
         var Sectoken = new JwtSecurityToken(_configuration["Jwt:Issuer"],
@@ -34,28 +34,25 @@ public class JwtService : IJwtService
 
     public string GetUserIdFromToken(string token)
     {
+        JwtSecurityToken validatedToken = (JwtSecurityToken)ValidateToken(token);
+        return validatedToken.Subject;
+    }
+
+    public SecurityToken ValidateToken(string token)
+    {
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-
-        /*try
-        {*/
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = securityKey,
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-
-            var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-
-            var userIdClaim = principal.FindFirst("sub");
-            return userIdClaim?.Value;
-        /*}
-        catch (Exception)
+        var validationParameters = new TokenValidationParameters
         {
-            return null;
-        }*/
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = securityKey,
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+
+        tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+        return validatedToken;
     }
 }
 
@@ -63,4 +60,5 @@ public interface IJwtService
 {
     string GenerateToken(string userId);
     string GetUserIdFromToken(string token);
+    SecurityToken ValidateToken(string token);
 }

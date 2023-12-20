@@ -12,8 +12,14 @@ public class PresupuestoService : IPresupuestoService
     }
     public void Create(Presupuesto presupuesto)
     {
+        presupuesto.User = null; // It is asigned null to avoid recursion problems (User.Presupuestos.User.Presupuestos...)
         _context.Presupuestos.Add(presupuesto);
         _context.SaveChanges();
+    }
+
+    public IQueryable<Presupuesto> GetByUserId(string userId)
+    {
+        return _context.Presupuestos.Where(p => p.UserId == userId).AsQueryable();
     }
 
     public Presupuesto GetById(string id)
@@ -26,4 +32,5 @@ public interface IPresupuestoService
 {
     void Create(Presupuesto presupuesto);
     Presupuesto GetById(string id);
+    IQueryable<Presupuesto> GetByUserId(string userId);
 }

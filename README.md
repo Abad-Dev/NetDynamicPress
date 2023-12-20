@@ -37,7 +37,7 @@ It's really simple, it just has a Relationship 1:N, the User with the Presupuest
 ## Models
 
 ### 1. Base
-The two models inherit from a *Base* class which defines the name and the Id generated automatically in the constructor:
+The two models inherit from a *Base* class which defines the name and the Id, which is generated automatically in the constructor:
 
 ```C#
 public class Base
@@ -57,8 +57,10 @@ public class Base
 }
 
 ```
+Also has a ToString method for debugging purposes
+
 ### 2. User
-The User model saves the navigation prop of the Presupuesto's, and the  salt with which the password has been hashed:
+The User model saves the navigation prop of the Presupuesto's, and the salt with which the password has been hashed:
 
 ```C#
 public class User : Base
@@ -75,7 +77,7 @@ public class User : Base
 It also saves the top image and the signature, which will be used in all the Presupuesto's
 
 ### 3. Presupuesto
-The Presupuesto model saves the foreign key from the user, and it saves the data *Config* in a json (weakly typed).
+The Presupuesto model saves the foreign key from the user, and it saves the **Data config** in a json (it is weakly typed).
 
 ```C#
 
@@ -93,4 +95,4 @@ public class Presupuesto : Base
 }
 ```
 
-Also have a Creation prop, which is generated in the constructor.
+Also have a Creation prop, that sets the CreationDate with the actual datetime, which is generated in the constructor.

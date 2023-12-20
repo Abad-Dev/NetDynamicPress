@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NetDynamicPress.Models;
 using NetDynamicPress.Services;
 
@@ -10,43 +11,43 @@ namespace NetDynamicPress.Controllers;
 [Authorize] // Asegura que todas las acciones en este controlador requieren autenticación
 public class PresupuestoController : ControllerBase
 {
-    private readonly IPresupuestoService _PresupuestoService;
+    private readonly IPresupuestoService _presupuestoService;
     private readonly IJwtService _jwtService;
 
     public PresupuestoController(IPresupuestoService PresupuestoService, IJwtService jwtService)
     {
-        _PresupuestoService = PresupuestoService;
+        _presupuestoService = PresupuestoService;
         _jwtService = jwtService;
-    }
-
-    [HttpGet]
-    [Route("/test")]
-    public IActionResult Test()
-    {
-        var authorizationHeader = HttpContext.Request.Headers["Authorization"].FirstOrDefault();
-        if (authorizationHeader != null && authorizationHeader.StartsWith("Bearer "))
-        {
-            string token = authorizationHeader["Bearer ".Length..];
-            string userId = _jwtService.GetUserIdFromToken(token);
-            
-            return Ok(userId);
-        }
-
-        return null;
     }
 
     [HttpPost]
     public IActionResult Create(Presupuesto presupuesto)
     {
-        _PresupuestoService.Create(presupuesto);
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
+        string userId = _jwtService.GetUserIdFromToken(token);
+        
+        presupuesto.UserId = userId;
+        _presupuestoService.Create(presupuesto);
         return Ok(presupuesto);
     }
 
     [HttpGet]
-    [Route("{id}")]
-    public IActionResult GetOne(string id)
+    public async Task<ActionResult<IEnumerable<Presupuesto>>> GetAll()
     {
-        Presupuesto presupuesto = _PresupuestoService.GetById(id);
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
+        string userId = _jwtService.GetUserIdFromToken(token);
+
+        List<Presupuesto> presupuestos = await _presupuestoService.GetByUserId(userId).ToListAsync();
+        
+        return Ok(presupuestos);
+        
+    }
+
+    [HttpGet]
+    [Route("{id}")]
+    public ActionResult<Presupuesto> GetOne(string id)
+    {
+        Presupuesto presupuesto = _presupuestoService.GetById(id);
         return Ok(presupuesto);
     }
 

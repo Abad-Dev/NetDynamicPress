@@ -55,11 +55,13 @@ public class UserService : IUserService
         }
     }
 
-    public User GetFirstUser()
+    public User GetUserById(string userId)
     {
-        User firstUser = _context.Users.FirstOrDefault();
+        User userFound = _context.Users
+            .Where(u => u.Id == userId)
+            .FirstOrDefault();
 
-        return firstUser;
+        return userFound;
     }
 
     public List<User> GetAllUsers()
@@ -75,6 +77,6 @@ public interface IUserService
     void TestDatabase();
     bool CreateUser(string name, string email, string password);
     User LoginUser(string name, string password);
-    User GetFirstUser();
+    User GetUserById(string userId);
     List<User> GetAllUsers();
 }
