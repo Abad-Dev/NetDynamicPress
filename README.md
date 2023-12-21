@@ -37,7 +37,7 @@ It's really simple, it just has a Relationship 1:N, the User with the Presupuest
 ## Models
 
 ### 1. Base
-The two models inherit from a *Base* class which defines the name and the Id, which is generated automatically in the constructor:
+The two models inherit from a *Base* class which defines the name and the Id, which is generated automatically with **Guid** in the constructor:
 
 ```C#
 public class Base
@@ -96,3 +96,26 @@ public class Presupuesto : Base
 ```
 
 Also have a Creation prop, that sets the CreationDate with the actual datetime, which is generated in the constructor.
+
+## JWT Implementation
+The JWT is implemented with a [service](https://github.com/Abad-Dev/NetDynamicPress/blob/main/Services/JwtService.cs) with the next functions:
+
+### Generate Token(String)
+Generates the session token and saves the User Id as a claim "sub" in the token. Returns the token as a string.
+```c#
+public string GenerateToken(string userId);
+```
+<br>
+
+### ValidateToken(String)
+Returns the Securitytoken of the validated token if it's correct.
+```c#
+public SecurityToken ValidateToken(string token)
+```
+<br>
+
+### GetUserIdFromToken(String)
+Uses the *ValidateToken* function to validate the token and get its SecurityToken. After that, gets the subject and return it as String. 
+```c#
+public string GetUserIdFromToken(string token)
+```

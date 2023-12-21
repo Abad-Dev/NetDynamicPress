@@ -19,12 +19,32 @@ public class PresupuestoService : IPresupuestoService
 
     public IQueryable<Presupuesto> GetByUserId(string userId)
     {
-        return _context.Presupuestos.Where(p => p.UserId == userId).AsQueryable();
+        return _context.Presupuestos
+            .Where(p => p.UserId == userId)
+            .AsQueryable();
     }
 
     public Presupuesto GetById(string id)
     {
         return _context.Presupuestos.Find(id);
+    }
+
+    public Presupuesto UpdatePresupuesto(string presupuestoId, Presupuesto presupuesto)
+    {
+        Presupuesto presupuestoFound = _context.Presupuestos
+            .Where(p => p.Id == presupuestoId)
+            .FirstOrDefault();
+
+        if (presupuestoFound == null)
+        {
+            return null;
+        }
+
+        presupuestoFound.Name = presupuesto.Name; 
+        presupuestoFound.Config = presupuesto.Config;
+        _context.SaveChanges();
+
+        return presupuestoFound;
     }
 }
 
@@ -33,4 +53,5 @@ public interface IPresupuestoService
     void Create(Presupuesto presupuesto);
     Presupuesto GetById(string id);
     IQueryable<Presupuesto> GetByUserId(string userId);
+    public Presupuesto UpdatePresupuesto(string presupuestoId, Presupuesto presupuesto);
 }

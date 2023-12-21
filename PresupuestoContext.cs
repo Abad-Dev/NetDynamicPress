@@ -21,27 +21,13 @@ public class PresupuestoContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        User user = new()
-        {
-            Email = "jfabianabadd@gmail.com",
-            PasswordHash = "XmGz6UKHaQm0KqCzdTmXow7aVVBIY7BVJ5avKcOkQ5E=",
-            PasswordSalt = new byte[16],
-            Name = "Jose Perez",
-            TopImage = "",
-            Signature = ""
-        };
+        modelBuilder.Entity<User>() // Add unique constraint
+            .HasIndex(u => u.Email)
+            .IsUnique();
 
-        Presupuesto presupuesto = new()
-        {
-            Name = "Presupuesto1",
-            UserId = user.Id,
-            Config = "{}"
-        };
-
-        modelBuilder.Entity<User>().HasData(user);
-        modelBuilder.Entity<Presupuesto>().HasData(presupuesto);
-
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<User>() // Makes it not null
+            .Property(u => u.Email)
+            .IsRequired();
     }
 
 }

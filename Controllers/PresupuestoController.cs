@@ -39,8 +39,7 @@ public class PresupuestoController : ControllerBase
 
         List<Presupuesto> presupuestos = await _presupuestoService.GetByUserId(userId).ToListAsync();
         
-        return Ok(presupuestos);
-        
+        return Ok(presupuestos);      
     }
 
     [HttpGet]
@@ -51,4 +50,11 @@ public class PresupuestoController : ControllerBase
         return Ok(presupuesto);
     }
 
+    [HttpPut]
+    [Route("{id}")]
+    public ActionResult<Presupuesto> UpdatePresupuesto(string id, Presupuesto presupuesto)
+    {
+        Presupuesto presupuestoUpdated = _presupuestoService.UpdatePresupuesto(id, presupuesto);
+        return Ok(presupuestoUpdated);
+    }
 }
