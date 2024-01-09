@@ -1,28 +1,8 @@
 # NetDynamicPress
 A backend for DynamicPress
 
-There is no appsettings.json because the connection String is there as in the [Microsoft Docs](https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-strings)
+There is no appsettings.json because the connection String is there as in the [Microsoft Docs](https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-strings). You have to delete the Development in [appsettings.Development.json](appsettings.Development.json).
 
-You have to add the file manually with the next settings:
-```json
-{
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
-  "AllowedHosts": "*",
-  "ConnectionStrings": {
-    "Presupuestos": "Server=;Database=;Uid=;Pwd=;"
-  },
-  ,
-  "Jwt": {
-    "Key": "",
-    "Issuer": ""
-  }
-}
-```
 It is important that the bit size of the key is at least 128 bits
 
 
