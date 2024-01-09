@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using NetDynamicPress.Context;
 using NetDynamicPress.Models;
 
@@ -24,6 +26,11 @@ public class UserService : IUserService
             return false;
         }
 
+        if (!IsValidEmail(email))
+        {
+            return false;
+        }
+
         byte[] salt = _pwdManager.GenerateSalt();
         string hashedPassword = _pwdManager.HashPassword(password, salt);
 
@@ -44,9 +51,12 @@ public class UserService : IUserService
     {
         User currentUser = _context.Users.Where(p => p.Email == email).FirstOrDefault();
 
+        if (currentUser == null)
+        {
+            return null;
+        }
         string storedHash = currentUser.PasswordHash;
         byte[] storedSalt = currentUser.PasswordSalt;
-
         if (_pwdManager.HashPassword(password, storedSalt) == storedHash)
         {
             return currentUser;
@@ -70,6 +80,51 @@ public class UserService : IUserService
 
         return Users;
     }
+
+
+    public bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        try
+        {
+            // Normalize the domain
+            email = Regex.Replace(email, @"(@)(.+)$", DomainMapper,
+                                    RegexOptions.None, TimeSpan.FromMilliseconds(200));
+
+            // Examines the domain part of the email and normalizes it.
+            string DomainMapper(Match match)
+            {
+                // Use IdnMapping class to convert Unicode domain names.
+                var idn = new IdnMapping();
+
+                // Pull out and process domain name (throws ArgumentException on invalid)
+                string domainName = idn.GetAscii(match.Groups[2].Value);
+
+                return match.Groups[1].Value + domainName;
+            }
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+
+        try
+        {
+            return Regex.IsMatch(email,
+                @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
+    }
 }
 
 public interface IUserService
@@ -79,4 +134,5 @@ public interface IUserService
     User LoginUser(string name, string password);
     User GetUserById(string userId);
     List<User> GetAllUsers();
+    bool IsValidEmail(string email);
 }

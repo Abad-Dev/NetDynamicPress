@@ -46,6 +46,22 @@ public class PresupuestoService : IPresupuestoService
 
         return presupuestoFound;
     }
+
+    public bool DeletePresupuesto(string id)
+    {
+        Presupuesto presupuestoFound = _context.Presupuestos
+            .Where(p => p.Id == id)
+            .FirstOrDefault();
+
+        if (presupuestoFound == null)
+        {
+            return false;
+        }
+
+        _context.Presupuestos.Remove(presupuestoFound);
+        _context.SaveChanges();
+        return true;
+    }
 }
 
 public interface IPresupuestoService
@@ -54,4 +70,5 @@ public interface IPresupuestoService
     Presupuesto GetById(string id);
     IQueryable<Presupuesto> GetByUserId(string userId);
     public Presupuesto UpdatePresupuesto(string presupuestoId, Presupuesto presupuesto);
+    public bool DeletePresupuesto(string id);
 }

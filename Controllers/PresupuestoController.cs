@@ -44,7 +44,7 @@ public class PresupuestoController : ControllerBase
 
     [HttpGet]
     [Route("{id}")]
-    public ActionResult<Presupuesto> GetOne(string id)
+    public ActionResult<Presupuesto> GetById(string id)
     {
         Presupuesto presupuesto = _presupuestoService.GetById(id);
         return Ok(presupuesto);
@@ -56,5 +56,17 @@ public class PresupuestoController : ControllerBase
     {
         Presupuesto presupuestoUpdated = _presupuestoService.UpdatePresupuesto(id, presupuesto);
         return Ok(presupuestoUpdated);
+    }
+
+    [HttpDelete]
+    [Route("{id}")]
+    public ActionResult<Presupuesto> DeletePresupuesto(string id)
+    {
+        if(_presupuestoService.DeletePresupuesto(id))
+        {
+            return Accepted();
+        } else{
+            return BadRequest();
+        }
     }
 }

@@ -1,11 +1,6 @@
 # NetDynamicPress
 A backend for DynamicPress
 
-There is no appsettings.json because the connection String is there as in the [Microsoft Docs](https://learn.microsoft.com/en-us/ef/core/miscellaneous/connection-strings). You have to delete the Development in [appsettings.Development.json](appsettings.Development.json).
-
-It is important that the bit size of the key is at least 128 bits
-
-
 ## Relationships and Design
 
 It's really simple, it just has a Relationship 1:N, the User with the Presupuesto's. The user is who create the Presupuesto's:
