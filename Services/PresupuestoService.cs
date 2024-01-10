@@ -31,9 +31,7 @@ public class PresupuestoService : IPresupuestoService
 
     public Presupuesto UpdatePresupuesto(string presupuestoId, Presupuesto presupuesto)
     {
-        Presupuesto presupuestoFound = _context.Presupuestos
-            .Where(p => p.Id == presupuestoId)
-            .FirstOrDefault();
+        Presupuesto presupuestoFound = GetById(presupuestoId);
 
         if (presupuestoFound == null)
         {
@@ -49,9 +47,7 @@ public class PresupuestoService : IPresupuestoService
 
     public bool DeletePresupuesto(string id)
     {
-        Presupuesto presupuestoFound = _context.Presupuestos
-            .Where(p => p.Id == id)
-            .FirstOrDefault();
+        Presupuesto presupuestoFound = GetById(id);
 
         if (presupuestoFound == null)
         {

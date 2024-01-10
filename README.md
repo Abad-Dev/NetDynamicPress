@@ -94,3 +94,30 @@ Uses the *ValidateToken* function to validate the token and get its SecurityToke
 ```c#
 public string GetUserIdFromToken(string token)
 ```
+
+## Password Manager
+This app has a [Password Manager Service](Services/PasswordService.cs) wich generate a Password Salt and hashes a Password with a Salt Passed. It also verifies a password with a hashed password and a salt:
+
+### HashPassword(String, Byte[])
+Hashes a password with a given salt.
+```c#
+public string HashPassword(string password, byte[] salt)
+```
+<br>
+
+### GenerateSalt()
+Generate a 16 bytes random salt.
+```c#
+public byte[] GenerateSalt()
+```
+<br>
+
+
+### VerifyPassword(String, String, Byte[])
+Verifies a password by comparing the hashed representation of the input password with a stored hash and salt.
+```c#
+public bool VerifyPassword(string inputPassword, string storedHash, byte[] salt)
+```
+<br>
+
+

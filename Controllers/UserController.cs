@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NetDynamicPress.Models;
 using NetDynamicPress.Services;
@@ -17,13 +18,8 @@ public class UserController : ControllerBase
         _jwtService = jwtService;
     }
 
-    [HttpGet]
-    public void TestDatabase()
-    {
-        _userService.TestDatabase();
-    }
-
     [HttpPost]
+    [Route("/register")]
     public IActionResult CreateUser([FromBody] RegisterViewModel model)
     {
         
@@ -31,7 +27,7 @@ public class UserController : ControllerBase
         {
             return Ok();
         } else {
-            return Conflict();
+            return Conflict("El email no es válido o ya existe");
         }
     }
 
@@ -46,6 +42,36 @@ public class UserController : ControllerBase
             return Ok(Token);
         } else {
             return Unauthorized();
+        }
+    }
+    
+    [HttpGet]
+    [Route("{id}")]
+    public IActionResult GetUserById(string id)
+    {
+        User userFound = _userService.GetById(id);
+
+        if (userFound != null)
+        {
+            return Ok(userFound);
+        } else
+        {
+            return BadRequest();
+        }
+    }
+
+
+    [HttpPut]
+    [Route("{id}")]
+    [Authorize]
+    public IActionResult UpdateUser(string id, [FromBody] User user)
+    {
+        if(_userService.UpdateUser(id, user))
+        {
+            return Accepted();
+        } else 
+        {
+            return BadRequest();
         }
     }
 }

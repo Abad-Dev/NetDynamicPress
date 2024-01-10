@@ -15,10 +15,6 @@ public class UserService : IUserService
         _context = dbContext;
         _pwdManager = pwdManager;
     }
-    public void TestDatabase()
-    {
-        _context.Database.EnsureCreated();
-    }
     public bool CreateUser(string name, string email, string password) 
     {
         if (_context.Users.Any(p => p.Email == email))
@@ -47,6 +43,38 @@ public class UserService : IUserService
         return true;
     }
 
+
+    public User GetById(string userId)
+    {
+        User userFound = _context.Users
+            .Where(u => u.Id == userId)
+            .FirstOrDefault();
+        if (userFound == null)
+        {
+            return null;
+        }
+        userFound.PasswordHash = null;
+        userFound.PasswordSalt = null; // No permite acceder ni a la contraseña ni a la sal
+
+        return userFound;
+    }
+
+    public bool UpdateUser(string id, User user)
+    {
+        User userFound = _context.Users
+            .Where(u => u.Id == id)
+            .FirstOrDefault(); // Usa esta forma cuando necesita el usuario completo
+        if (userFound == null)
+        {
+            return false;
+        }
+        userFound.TopImage = user.TopImage;
+        userFound.Signature = user.Signature;
+        _context.SaveChanges();
+
+        return true;
+    }
+
     public User LoginUser(string email, string password)
     {
         User currentUser = _context.Users.Where(p => p.Email == email).FirstOrDefault();
@@ -57,31 +85,13 @@ public class UserService : IUserService
         }
         string storedHash = currentUser.PasswordHash;
         byte[] storedSalt = currentUser.PasswordSalt;
-        if (_pwdManager.HashPassword(password, storedSalt) == storedHash)
+        if (_pwdManager.VerifyPassword(password, storedHash, storedSalt))
         {
-            return currentUser;
+            return GetById(currentUser.Id);
         } else {
             return null;
         }
     }
-
-    public User GetUserById(string userId)
-    {
-        User userFound = _context.Users
-            .Where(u => u.Id == userId)
-            .FirstOrDefault();
-
-        return userFound;
-    }
-
-    public List<User> GetAllUsers()
-    {
-        List<User> Users = _context.Users.ToList();
-
-        return Users;
-    }
-
-
     public bool IsValidEmail(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
@@ -129,10 +139,9 @@ public class UserService : IUserService
 
 public interface IUserService
 {
-    void TestDatabase();
     bool CreateUser(string name, string email, string password);
+    User GetById(string userId);
+    bool UpdateUser(string id, User user);
     User LoginUser(string name, string password);
-    User GetUserById(string userId);
-    List<User> GetAllUsers();
     bool IsValidEmail(string email);
 }
