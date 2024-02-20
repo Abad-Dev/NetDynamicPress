@@ -46,10 +46,10 @@ public class UserController : ControllerBase
     }
     
     [HttpGet]
-    [Route("{id}")]
-    public IActionResult GetUserById(string id)
+    public IActionResult GetUserByToken(string token)
     {
-        User userFound = _userService.GetById(id);
+        string userId = _jwtService.GetUserIdFromToken(token);
+        User userFound = _userService.GetById(userId);
 
         if (userFound != null)
         {

@@ -12,8 +12,12 @@ public class PresupuestoService : IPresupuestoService
     }
     public void Create(Presupuesto presupuesto)
     {
-        presupuesto.User = null; // It is asigned null to avoid recursion problems (User.Presupuestos.User.Presupuestos...)
-        _context.Presupuestos.Add(presupuesto);
+        Presupuesto newPesupuesto = new() {
+            UserId = presupuesto.UserId,
+            Config = presupuesto.Config,
+            Name = presupuesto.Name
+        };
+        _context.Presupuestos.Add(newPesupuesto);
         _context.SaveChanges();
     }
 

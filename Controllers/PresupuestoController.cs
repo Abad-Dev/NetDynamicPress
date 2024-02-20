@@ -21,7 +21,7 @@ public class PresupuestoController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create(Presupuesto presupuesto)
+    public IActionResult Create([FromBody] Presupuesto presupuesto)
     {
         string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
