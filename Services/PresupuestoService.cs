@@ -42,7 +42,6 @@ public class PresupuestoService : IPresupuestoService
             return null;
         }
 
-        presupuestoFound.Name = presupuesto.Name; 
         presupuestoFound.Config = presupuesto.Config;
         _context.SaveChanges();
 
