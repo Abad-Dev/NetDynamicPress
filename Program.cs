@@ -46,7 +46,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPresupuestoService, PresupuestoService>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
-
+builder.Services.AddScoped<DatabaseInitializer>();
 
 
 var app = builder.Build();
@@ -67,5 +67,20 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var initializer = services.GetRequiredService<DatabaseInitializer>();
+        initializer.Initialize();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ocurrió un error al inicializar la base de datos: {ex.Message}");
+        throw;
+    }
+}
 
 app.Run();

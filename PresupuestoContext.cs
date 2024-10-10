@@ -31,3 +31,27 @@ public class PresupuestoContext : DbContext
     }
 
 }
+
+
+public class DatabaseInitializer
+    {
+        private readonly PresupuestoContext _context;
+
+        public DatabaseInitializer(PresupuestoContext context)
+        {
+            _context = context;
+        }
+
+        public void Initialize()
+        {
+            try
+            {
+                _context.Database.EnsureCreated();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ocurrió un error al crear la base de datos: {ex.Message}");
+                throw;
+            }
+        }
+    }

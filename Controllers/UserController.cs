@@ -46,8 +46,9 @@ public class UserController : ControllerBase
     }
     
     [HttpGet]
-    public IActionResult GetUserByToken(string token)
+    public IActionResult GetUserByToken()
     {
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
         User userFound = _userService.GetById(userId);
 
