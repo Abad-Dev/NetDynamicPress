@@ -29,7 +29,7 @@ public class UserController : ControllerBase
         } else {
             return Conflict("El email no es válido o ya existe");
         }
-    }
+    }   
 
     [HttpPost]
     [Route("/login")]
