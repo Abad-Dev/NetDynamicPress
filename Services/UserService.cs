@@ -54,7 +54,7 @@ public class UserService : IUserService
             return null;
         }
         userFound.PasswordHash = null;
-        userFound.PasswordSalt = null; // No permite acceder ni a la contraseña ni a la sal
+        userFound.PasswordSalt = null; 
 
         return userFound;
     }
@@ -64,10 +64,7 @@ public class UserService : IUserService
         User userFound = _context.Users
             .Where(u => u.Id == id)
             .FirstOrDefault(); // Usa esta forma cuando necesita el usuario completo
-        if (userFound == null)
-        {
-            return false;
-        }
+        
         userFound.TopImage = user.TopImage;
         userFound.Signature = user.Signature;
         _context.SaveChanges();
@@ -135,6 +132,58 @@ public class UserService : IUserService
             return false;
         }
     }
+
+    public bool UpdateTopImage(string id, IFormFile firma)
+    {
+        User userFound = _context.Users
+            .Where(u => u.Id == id)
+            .FirstOrDefault();
+
+        if (userFound == null)
+        {
+            return false;
+        }
+        Console.WriteLine($"User ID: {id}");
+
+        if (firma != null)
+        {
+            Console.WriteLine($"si hay firma");
+            using (var memoryStream = new MemoryStream())
+            {
+                firma.CopyTo(memoryStream);
+                userFound.TopImage = memoryStream.ToArray();
+                Console.WriteLine($"TopImage (byte[]): {userFound.TopImage.Length} bytes");
+            }
+        }
+
+        _context.SaveChanges();
+        return true;
+    }
+
+    public bool UpdateSignature(string id, IFormFile signature)
+    {
+        User userFound = _context.Users
+            .Where(u => u.Id == id)
+            .FirstOrDefault();
+
+        if (userFound == null)
+        {
+            return false;
+        }
+
+        if (signature != null)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                signature.CopyTo(memoryStream);
+                userFound.Signature = memoryStream.ToArray();
+            }
+        }
+
+        _context.SaveChanges();
+        return true;
+    }
+
 }
 
 public interface IUserService
@@ -144,4 +193,8 @@ public interface IUserService
     bool UpdateUser(string id, User user);
     User LoginUser(string name, string password);
     bool IsValidEmail(string email);
+
+    bool UpdateTopImage(string id, IFormFile firma);
+
+    bool UpdateSignature(string id, IFormFile firma);
 }

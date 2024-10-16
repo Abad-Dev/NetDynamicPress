@@ -54,6 +54,13 @@ public class UserController : ControllerBase
 
         if (userFound != null)
         {
+            var userResponse = new
+            {
+                userFound.Email,
+                // Otros campos que quieras incluir
+                TopImage = Convert.ToBase64String(userFound.TopImage),
+                Signature = Convert.ToBase64String(userFound.Signature),
+            };
             return Ok(userFound);
         } else
         {
@@ -66,13 +73,56 @@ public class UserController : ControllerBase
     [Route("{id}")]
     [Authorize]
     public IActionResult UpdateUser(string id, [FromBody] User user)
-    {
-        if(_userService.UpdateUser(id, user))
+    { 
+        Console.WriteLine($"User ID: {id}");
+        Console.WriteLine($"TopImage (byte[]): {user.TopImage.Length} bytes");
+        Console.WriteLine($"Signature (byte[]): {user.Signature.Length} bytes");
+
+        if (_userService.UpdateUser(id, user))
         {
             return Accepted();
-        } else 
+        }
+        else
         {
             return BadRequest();
         }
     }
+
+    [HttpPut]
+    [Route("UpdateTopImage")]
+    [Authorize]
+    public IActionResult updateFirma([FromForm] UpdateFileViewModel form) 
+    {
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
+        string userId = _jwtService.GetUserIdFromToken(token);
+        
+        if (_userService.UpdateTopImage(userId, form.file))
+        {
+            return Accepted();
+        }
+        else
+        {
+            return BadRequest();
+        }
+    }
+
+    [HttpPut]
+    [Route("UpdateSignature")]
+    [Authorize]
+    public IActionResult updateSignature([FromForm] UpdateFileViewModel form)
+    {
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
+        string userId = _jwtService.GetUserIdFromToken(token);
+        if (_userService.UpdateSignature(userId, form.file))
+        {
+            return Accepted();
+        }
+        else
+        {
+            return BadRequest();
+        }
+    }
+
+    
+
 }
