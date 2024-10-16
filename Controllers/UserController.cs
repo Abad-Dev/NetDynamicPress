@@ -57,7 +57,6 @@ public class UserController : ControllerBase
             var userResponse = new
             {
                 userFound.Email,
-                // Otros campos que quieras incluir
                 TopImage = Convert.ToBase64String(userFound.TopImage),
                 Signature = Convert.ToBase64String(userFound.Signature),
             };
