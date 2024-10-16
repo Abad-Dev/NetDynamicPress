@@ -73,9 +73,6 @@ public class UserController : ControllerBase
     [Authorize]
     public IActionResult UpdateUser(string id, [FromBody] User user)
     { 
-        Console.WriteLine($"User ID: {id}");
-        Console.WriteLine($"TopImage (byte[]): {user.TopImage.Length} bytes");
-        Console.WriteLine($"Signature (byte[]): {user.Signature.Length} bytes");
 
         if (_userService.UpdateUser(id, user))
         {
