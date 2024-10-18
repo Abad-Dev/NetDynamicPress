@@ -50,21 +50,12 @@ public class UserController : ControllerBase
     {
         string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
-        User userFound = _userService.GetById(userId);
 
-        if (userFound != null)
-        {
-            var userResponse = new
-            {
-                userFound.Email,
-                TopImage = Convert.ToBase64String(userFound.TopImage),
-                Signature = Convert.ToBase64String(userFound.Signature),
-            };
-            return Ok(userFound);
-        } else
-        {
-            return BadRequest();
-        }
+        User userFound = _userService.GetById(userId);
+        
+        if (userFound == null) { return NotFound(); }
+
+        return Ok(userFound);
     }
 
 
@@ -73,10 +64,6 @@ public class UserController : ControllerBase
     [Authorize]
     public IActionResult UpdateUser(string id, [FromBody] User user)
     { 
-        Console.WriteLine($"User ID: {id}");
-        Console.WriteLine($"TopImage (byte[]): {user.TopImage.Length} bytes");
-        Console.WriteLine($"Signature (byte[]): {user.Signature.Length} bytes");
-
         if (_userService.UpdateUser(id, user))
         {
             return Accepted();
@@ -90,12 +77,12 @@ public class UserController : ControllerBase
     [HttpPut]
     [Route("UpdateTopImage")]
     [Authorize]
-    public IActionResult updateFirma([FromForm] UpdateFileViewModel form) 
+    public IActionResult UpdateTopImage([FromForm] UpdateFileViewModel form) 
     {
         string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
         
-        if (_userService.UpdateTopImage(userId, form.file))
+        if (_userService.UpdateUserFile(userId, form.file, "topImage"))
         {
             return Accepted();
         }
@@ -108,12 +95,12 @@ public class UserController : ControllerBase
     [HttpPut]
     [Route("UpdateSignature")]
     [Authorize]
-    public IActionResult updateSignature([FromForm] UpdateFileViewModel form)
+    public IActionResult UpdateSignature([FromForm] UpdateFileViewModel form)
     {
         string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
-        if (_userService.UpdateSignature(userId, form.file))
-        {
+        if (_userService.UpdateUserFile(userId, form.file, "signature"))
+        {   
             return Accepted();
         }
         else
@@ -121,7 +108,4 @@ public class UserController : ControllerBase
             return BadRequest();
         }
     }
-
-    
-
 }

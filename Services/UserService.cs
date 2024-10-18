@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 using NetDynamicPress.Context;
 using NetDynamicPress.Models;
 
@@ -133,57 +134,30 @@ public class UserService : IUserService
         }
     }
 
-    public bool UpdateTopImage(string id, IFormFile firma)
+    public bool UpdateUserFile(string id, IFormFile topImage, string field)
     {
+        if (topImage == null || topImage.Length == 0) { return false ; }
+        
         User userFound = _context.Users
             .Where(u => u.Id == id)
             .FirstOrDefault();
 
-        if (userFound == null)
+        if (userFound == null) { return false; }
+        
+        using (var memoryStream = new MemoryStream())
         {
-            return false;
-        }
-        Console.WriteLine($"User ID: {id}");
+            topImage.CopyTo(memoryStream);
 
-        if (firma != null)
-        {
-            Console.WriteLine($"si hay firma");
-            using (var memoryStream = new MemoryStream())
-            {
-                firma.CopyTo(memoryStream);
+            if (field == "topImage") {
                 userFound.TopImage = memoryStream.ToArray();
-                Console.WriteLine($"TopImage (byte[]): {userFound.TopImage.Length} bytes");
-            }
-        }
-
-        _context.SaveChanges();
-        return true;
-    }
-
-    public bool UpdateSignature(string id, IFormFile signature)
-    {
-        User userFound = _context.Users
-            .Where(u => u.Id == id)
-            .FirstOrDefault();
-
-        if (userFound == null)
-        {
-            return false;
-        }
-
-        if (signature != null)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                signature.CopyTo(memoryStream);
+            } else if (field == "signature") {
                 userFound.Signature = memoryStream.ToArray();
             }
         }
-
+        
         _context.SaveChanges();
         return true;
     }
-
 }
 
 public interface IUserService
@@ -193,8 +167,5 @@ public interface IUserService
     bool UpdateUser(string id, User user);
     User LoginUser(string name, string password);
     bool IsValidEmail(string email);
-
-    bool UpdateTopImage(string id, IFormFile firma);
-
-    bool UpdateSignature(string id, IFormFile firma);
+    bool UpdateUserFile(string id, IFormFile firma, string field);
 }
