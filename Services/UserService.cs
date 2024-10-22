@@ -3,6 +3,10 @@ using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using NetDynamicPress.Context;
 using NetDynamicPress.Models;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Microsoft.Extensions.Configuration;
+using Amazon.Runtime;
 
 namespace NetDynamicPress.Services;
 
@@ -10,13 +14,24 @@ public class UserService : IUserService
 {
     PresupuestoContext _context;
     IPasswordService _pwdManager;
+    IAmazonS3 _s3Client;
+    IConfiguration _config;
 
-    public UserService(PresupuestoContext dbContext, IPasswordService pwdManager)
+    public UserService(PresupuestoContext dbContext, IPasswordService pwdManager, IConfiguration config)
     {
         _context = dbContext;
         _pwdManager = pwdManager;
+        _config = config;
+
+        // Crear cliente de S3 con credenciales de configuración
+        var credentials = new BasicAWSCredentials(_config["AWS:AccessKeyId"], _config["AWS:SecretAccessKey"]);
+        var awsOptions = new AmazonS3Config
+        {
+            RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(_config["AWS:Region"])
+        };
+        _s3Client = new AmazonS3Client(credentials, awsOptions);
     }
-    public bool CreateUser(string name, string email, string password) 
+    public bool CreateUser(string name, string email, string password)
     {
         if (_context.Users.Any(p => p.Email == email))
         {
@@ -36,10 +51,10 @@ public class UserService : IUserService
             Name = name,
             Email = email,
             PasswordHash = hashedPassword,
-            PasswordSalt = salt 
+            PasswordSalt = salt
         };// The rest is null
 
-        _context.Users.Add(newUser); 
+        _context.Users.Add(newUser);
         _context.SaveChanges();
         return true;
     }
@@ -55,7 +70,7 @@ public class UserService : IUserService
             return null;
         }
         userFound.PasswordHash = null;
-        userFound.PasswordSalt = null; 
+        userFound.PasswordSalt = null;
 
         return userFound;
     }
@@ -65,9 +80,9 @@ public class UserService : IUserService
         User userFound = _context.Users
             .Where(u => u.Id == id)
             .FirstOrDefault(); // Usa esta forma cuando necesita el usuario completo
-        
-        userFound.TopImage = user.TopImage;
-        userFound.Signature = user.Signature;
+
+        //userFound.TopImage = user.TopImage;
+        //userFound.Signature = user.Signature;
         _context.SaveChanges();
 
         return true;
@@ -86,7 +101,9 @@ public class UserService : IUserService
         if (_pwdManager.VerifyPassword(password, storedHash, storedSalt))
         {
             return GetById(currentUser.Id);
-        } else {
+        }
+        else
+        {
             return null;
         }
     }
@@ -136,28 +153,76 @@ public class UserService : IUserService
 
     public bool UpdateUserFile(string id, IFormFile topImage, string field)
     {
-        if (topImage == null || topImage.Length == 0) { return false ; }
-        
+        if (topImage == null || topImage.Length == 0) { return false; }
+
         User userFound = _context.Users
             .Where(u => u.Id == id)
             .FirstOrDefault();
 
         if (userFound == null) { return false; }
-        
+
         using (var memoryStream = new MemoryStream())
         {
             topImage.CopyTo(memoryStream);
 
-            if (field == "topImage") {
-                userFound.TopImage = memoryStream.ToArray();
-            } else if (field == "signature") {
-                userFound.Signature = memoryStream.ToArray();
+            if (field == "topImage")
+            {
+                //userFound.TopImage = memoryStream.ToArray();
+            }
+            else if (field == "signature")
+            {
+                //userFound.Signature = memoryStream.ToArray();
+                Console.WriteLine($"Tamaño del archivo: {topImage.Length} bytes");
             }
         }
-        
+
         _context.SaveChanges();
         return true;
     }
+
+    public async Task<bool> UpdateUserFileAsync(string userId, IFormFile file, string field)
+    {
+        if (file == null || file.Length == 0) return false;
+
+        var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+        if (user == null) return false;
+
+        string bucketName = _config["AWS:BucketName"];
+        string key = $"{userId}/{field}/{file.FileName}";
+        string baseUrl = _config["AWS:BaseUrl"];
+
+        // Subir archivo a S3
+        using (var memoryStream = new MemoryStream())
+        {
+            await file.CopyToAsync(memoryStream);
+            var uploadRequest = new PutObjectRequest
+            {
+                InputStream = memoryStream,
+                BucketName = bucketName,
+                Key = key,
+                ContentType = file.ContentType,
+                //CannedACL = S3CannedACL.PublicRead
+            };
+
+            await _s3Client.PutObjectAsync(uploadRequest);
+        }
+
+        // Guardar la URL correspondiente
+        string url = $"{baseUrl}{key}";
+        if (field == "topImage")
+        {
+            user.TopImageUrl = url;
+        }
+        else if (field == "signature")
+        {
+            user.SignatureUrl = url;
+        }
+
+        _context.SaveChanges();
+        return true;
+    }
+
+
 }
 
 public interface IUserService
@@ -168,4 +233,5 @@ public interface IUserService
     User LoginUser(string name, string password);
     bool IsValidEmail(string email);
     bool UpdateUserFile(string id, IFormFile firma, string field);
+    Task<bool> UpdateUserFileAsync(string userId, IFormFile file, string field);
 }

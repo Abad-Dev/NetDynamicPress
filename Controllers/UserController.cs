@@ -22,14 +22,16 @@ public class UserController : ControllerBase
     [Route("/register")]
     public IActionResult CreateUser([FromBody] RegisterViewModel model)
     {
-        
+
         if (_userService.CreateUser(model.Name, model.Email, model.Password))
         {
             return Ok();
-        } else {
+        }
+        else
+        {
             return Conflict("El email no es válido o ya existe");
         }
-    }   
+    }
 
     [HttpPost]
     [Route("/login")]
@@ -40,11 +42,13 @@ public class UserController : ControllerBase
         {
             string Token = _jwtService.GenerateToken(userFound.Id);
             return Ok(Token);
-        } else {
+        }
+        else
+        {
             return Unauthorized();
         }
     }
-    
+
     [HttpGet]
     public IActionResult GetUserByToken()
     {
@@ -52,7 +56,7 @@ public class UserController : ControllerBase
         string userId = _jwtService.GetUserIdFromToken(token);
 
         User userFound = _userService.GetById(userId);
-        
+
         if (userFound == null) { return NotFound(); }
 
         return Ok(userFound);
@@ -63,7 +67,7 @@ public class UserController : ControllerBase
     [Route("{id}")]
     [Authorize]
     public IActionResult UpdateUser(string id, [FromBody] User user)
-    { 
+    {
         if (_userService.UpdateUser(id, user))
         {
             return Accepted();
@@ -77,17 +81,21 @@ public class UserController : ControllerBase
     [HttpPut]
     [Route("UpdateTopImage")]
     [Authorize]
-    public IActionResult UpdateTopImage([FromForm] UpdateFileViewModel form) 
+    public async Task<IActionResult> UpdateTopImage([FromForm] UpdateFileViewModel form)
     {
-        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
-        
-        if (_userService.UpdateUserFile(userId, form.file, "topImage"))
+
+        var result = await _userService.UpdateUserFileAsync(userId, form.file, "topImage");
+
+        if (result)
         {
+            Console.WriteLine("Usuario actualizó topImage");
             return Accepted();
         }
         else
         {
+            Console.WriteLine("Usuario no actualizó topImage");
             return BadRequest();
         }
     }
@@ -95,17 +103,23 @@ public class UserController : ControllerBase
     [HttpPut]
     [Route("UpdateSignature")]
     [Authorize]
-    public IActionResult UpdateSignature([FromForm] UpdateFileViewModel form)
+    public async Task<IActionResult> UpdateSignature([FromForm] UpdateFileViewModel form)
     {
-        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()["Bearer ".Length..];
+        string token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?["Bearer ".Length..];
         string userId = _jwtService.GetUserIdFromToken(token);
-        if (_userService.UpdateUserFile(userId, form.file, "signature"))
-        {   
+
+        var result = await _userService.UpdateUserFileAsync(userId, form.file, "signature");
+
+        if (result)
+        {
+            Console.WriteLine("Usuario actualizó signature");
             return Accepted();
         }
         else
         {
+            Console.WriteLine("Usuario no actualizó signature");
             return BadRequest();
         }
     }
+
 }
