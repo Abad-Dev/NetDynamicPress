@@ -37,7 +37,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 {
     options.AddPolicy(MyAllowSpecificOrigins, builder =>
     {
-        builder.WithOrigins("http://localhost:5173")
+        builder.WithOrigins("https://presupuestos.mercadosperu.com")
                 .AllowAnyMethod()
                 .AllowAnyHeader();
     });
@@ -53,6 +53,14 @@ builder.Services.AddScoped<IPresupuestoService, PresupuestoService>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<DatabaseInitializer>();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ConfigureHttpsDefaults(listenOptions =>
+    {
+        listenOptions.ServerCertificate = null; // Esto permite que se cargue desde appsettings.json
+    });
+});
 
 
 var app = builder.Build();
