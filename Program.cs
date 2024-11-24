@@ -37,7 +37,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 {
     options.AddPolicy(MyAllowSpecificOrigins, builder =>
     {
-        builder.WithOrigins("https://presupuestos.mercadosperu.com")
+    //https://presupuestos.mercadosperu.com
+        builder.WithOrigins("*")
                 .AllowAnyMethod()
                 .AllowAnyHeader();
     });
@@ -50,6 +51,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<PresupuestoContext>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPresupuestoService, PresupuestoService>();
+builder.Services.AddScoped<IReciboService, ReciboService>();
 builder.Services.AddSingleton<IPasswordService, PasswordService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<DatabaseInitializer>();

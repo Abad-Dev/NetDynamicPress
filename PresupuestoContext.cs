@@ -8,6 +8,8 @@ public class PresupuestoContext : DbContext
 {
     public DbSet<User> Users { get;set; }
     public DbSet<Presupuesto> Presupuestos { get;set; }
+    public DbSet<Recibo> Recibos { get; set; }
+
     private readonly IConfiguration _configuration;
 
     public PresupuestoContext(IConfiguration configuration)
